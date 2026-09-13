@@ -61,6 +61,22 @@ class TableSchemaTest extends TestCase
      * Escenario: se construye un TableSchema completo con tabs, búsqueda, paginación, soft deletes, columnas, filtros y acciones.
      * Expectativa: el array serializado cumple rigurosamente con la estructura formal de SPEC-002.
      */
+    /**
+     * Escenario: se instancia un TableSchema sin invocar fixedHeader explícitamente.
+     * Expectativa: fixedHeader es true por defecto en la serialización y permite desactivarlo pasando false.
+     */
+    #[Test]
+    public function it_defaults_fixed_header_to_true_and_allows_disabling_it(): void
+    {
+        // given
+        $defaultTable = TableSchema::make('default-table');
+        $disabledTable = TableSchema::make('disabled-table')->fixedHeader(false);
+
+        // when & then
+        $this->assertTrue($defaultTable->toArray()['fixedHeader']);
+        $this->assertFalse($disabledTable->toArray()['fixedHeader']);
+    }
+
     #[Test]
     public function it_serializes_table_schema_matching_json_spec(): void
     {
