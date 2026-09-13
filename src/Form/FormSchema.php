@@ -13,7 +13,17 @@ use Warrior\SchemaBuilder\Contracts\FieldContainerContract;
 use Warrior\SchemaBuilder\Contracts\FieldContract;
 use Warrior\SchemaBuilder\Contracts\SchemaContract;
 
-/** @phpstan-consistent-constructor */
+/**
+ * Class FormSchema
+ *
+ * Builder principal de formularios (Composite Root).
+ * Permite definir tanto formularios planos (lista de campos) como estructuras
+ * jerárquicas complejas organizadas en pestañas (FormTab) o secciones (FormSection).
+ * Provee compilación recursiva de reglas de validación (toValidationRules)
+ * compatibles con Laravel Validator.
+ *
+ * @phpstan-consistent-constructor
+ */
 class FormSchema implements FieldContainerContract, SchemaContract
 {
     use HasIdAndTitle;
@@ -22,29 +32,53 @@ class FormSchema implements FieldContainerContract, SchemaContract
     use Macroable;
     use Makeable;
 
+    /**
+     * Endpoint API al que se enviará la petición (ej. '/api/v1/users').
+     */
     protected ?string $endpoint = null;
 
+    /**
+     * Método HTTP para el envío del formulario (POST, PUT, PATCH).
+     */
     protected string $httpMethod = 'POST';
 
+    /**
+     * Texto del botón principal de envío / guardado.
+     */
     protected string $submitLabel = 'Guardar Registro';
 
+    /**
+     * Texto del botón de cancelar / cerrar modal.
+     */
     protected string $cancelLabel = 'Cancelar';
 
     /**
+     * Lista plana de campos para formularios sin pestañas ni secciones.
+     *
      * @var array<int, FieldContract>
      */
     protected array $inputs = [];
 
     /**
+     * Pestañas del formulario (patrón Composite).
+     *
      * @var array<int, FormTab>
      */
     protected array $tabs = [];
 
     /**
+     * Secciones agrupadas dentro del formulario.
+     *
      * @var array<int, FormSection>
      */
     protected array $sections = [];
 
+    /**
+     * Constructor del esquema de formulario.
+     *
+     * @param  string|null  $id  Identificador único del formulario.
+     * @param  string|null  $title  Título del encabezado o modal.
+     */
     public function __construct(?string $id = null, ?string $title = null)
     {
         if ($id !== null) {
@@ -55,6 +89,12 @@ class FormSchema implements FieldContainerContract, SchemaContract
         }
     }
 
+    /**
+     * Define la URL del endpoint y opcionalmente el método HTTP.
+     *
+     * @param  string  $endpoint  URL de destino.
+     * @param  string  $httpMethod  Método HTTP ('POST', 'PUT', 'PATCH').
+     */
     public function endpoint(string $endpoint, string $httpMethod = 'POST'): static
     {
         $this->endpoint = $endpoint;
@@ -63,6 +103,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Define explícitamente el método HTTP del formulario.
+     */
     public function httpMethod(string $method): static
     {
         $this->httpMethod = strtoupper($method);
@@ -70,6 +113,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Asigna la etiqueta del botón de submit.
+     */
     public function submitLabel(string $label): static
     {
         $this->submitLabel = $label;
@@ -77,6 +123,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Asigna la etiqueta del botón de cancelar.
+     */
     public function cancelLabel(string $label): static
     {
         $this->cancelLabel = $label;
@@ -85,7 +134,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
     }
 
     /**
-     * Configura un formulario plano con una lista de campos.
+     * Configura el formulario como plano mediante una lista de campos.
      *
      * @param  array<int, FieldContract>  $fields
      */
@@ -96,6 +145,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Agrega un campo individual a la lista de inputs.
+     */
     public function addField(FieldContract $field): static
     {
         $this->inputs[] = $field;
@@ -104,7 +156,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
     }
 
     /**
-     * Configura el formulario dividido en pestañas.
+     * Configura el formulario estructurado en múltiples pestañas (tabs).
      *
      * @param  array<int, FormTab>  $tabs
      */
@@ -115,6 +167,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Agrega una pestaña al formulario.
+     */
     public function addTab(FormTab $tab): static
     {
         $this->tabs[] = $tab;
@@ -123,7 +178,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
     }
 
     /**
-     * Configura secciones agrupadas.
+     * Configura el formulario organizado en secciones agrupadas.
      *
      * @param  array<int, FormSection>  $sections
      */
@@ -134,6 +189,9 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Agrega una sección agrupada al formulario.
+     */
     public function addSection(FormSection $section): static
     {
         $this->sections[] = $section;
@@ -141,23 +199,31 @@ class FormSchema implements FieldContainerContract, SchemaContract
         return $this;
     }
 
+    /**
+     * Comprueba si el formulario cuenta con pestañas.
+     */
     public function hasTabs(): bool
     {
         return ! empty($this->tabs);
     }
 
+    /**
+     * Comprueba si el formulario cuenta con secciones.
+     */
     public function hasSections(): bool
     {
         return ! empty($this->sections);
     }
 
     /**
-     * Retorna todos los campos contenidos recursivamente.
+     * Retorna todos los campos contenidos recursivamente en el formulario,
+     * resolviendo tanto pestañas como secciones o campos planos.
      *
      * @return array<int, FieldContract>
      */
     public function getFields(): array
     {
+        // 1. Si contiene pestañas, recopila los campos de cada una de ellas
         if ($this->hasTabs()) {
             $fields = [];
             foreach ($this->tabs as $tab) {
@@ -167,6 +233,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
             return $fields;
         }
 
+        // 2. Si contiene secciones agrupadas, recopila los campos de cada sección
         if ($this->hasSections()) {
             $fields = [];
             foreach ($this->sections as $section) {
@@ -176,19 +243,21 @@ class FormSchema implements FieldContainerContract, SchemaContract
             return $fields;
         }
 
+        // 3. De lo contrario, retorna la lista plana de inputs
         return $this->inputs;
     }
 
     /**
-     * Compila las reglas de validación para Laravel Validator.
+     * Compila recursivamente todas las reglas de validación de los campos contenidos.
      *
-     * @param  bool  $isUpdate  Si es true, activa modo PATCH (dirty tracking: required -> sometimes, required).
+     * @param  bool  $isUpdate  Si es true, activa modo PATCH con adaptación dirty tracking.
      * @return array<string, array<int, mixed>>
      */
     public function toValidationRules(bool $isUpdate = false): array
     {
         $rules = [];
 
+        // Recorre todos los campos resueltos de forma transparente
         foreach ($this->getFields() as $field) {
             $fieldRules = $field->getValidationRules($isUpdate);
             if (! empty($fieldRules)) {
@@ -200,7 +269,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
     }
 
     /**
-     * Serializa el formulario al contrato JSON Schema (SPEC-002).
+     * Serializa el formulario al formato JSON Schema (SPEC-002).
      *
      * @return array<string, mixed>
      */
@@ -216,6 +285,7 @@ class FormSchema implements FieldContainerContract, SchemaContract
             'cancelLabel' => $this->cancelLabel,
         ];
 
+        // Serializa tabs, secciones o inputs asegurando exclusividad mutua según el contrato
         if ($this->hasTabs()) {
             $data['tabs'] = array_map(fn (FormTab $tab) => $tab->toArray(), $this->tabs);
             $data['inputs'] = null;
@@ -232,6 +302,8 @@ class FormSchema implements FieldContainerContract, SchemaContract
     }
 
     /**
+     * Serializa para json_encode().
+     *
      * @return array<string, mixed>
      */
     public function jsonSerialize(): array

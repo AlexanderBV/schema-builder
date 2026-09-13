@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Warrior\SchemaBuilder\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Warrior\SchemaBuilder\Detail\DetailField;
 use Warrior\SchemaBuilder\Detail\DetailSchema;
@@ -12,8 +13,14 @@ use Warrior\SchemaBuilder\Enums\ColumnType;
 
 class DetailSchemaTest extends TestCase
 {
-    public function test_flat_detail_schema(): void
+    /**
+     * Escenario: se define una vista de detalle plana con campos formateados (avatar, badge, currency, datetime).
+     * Expectativa: el array serializado contiene fields poblado y tabs en null, con tipos y formato de columnas correctos.
+     */
+    #[Test]
+    public function it_serializes_flat_detail_schema_matching_json_spec(): void
     {
+        // given
         $schema = DetailSchema::make('user-detail', 'Detalle de Usuario')
             ->description('Vista de solo lectura')
             ->fields([
@@ -23,10 +30,14 @@ class DetailSchemaTest extends TestCase
                 DetailField::make('created_at')->datetime()->cols(6),
             ]);
 
-        $this->assertFalse($schema->hasTabs());
-        $this->assertCount(4, $schema->getFields());
-
+        // when
+        $hasTabs = $schema->hasTabs();
+        $fields = $schema->getFields();
         $array = $schema->toArray();
+
+        // then
+        $this->assertFalse($hasTabs);
+        $this->assertCount(4, $fields);
         $this->assertSame('user-detail', $array['id']);
         $this->assertSame('Detalle de Usuario', $array['title']);
         $this->assertNull($array['tabs']);
@@ -39,8 +50,14 @@ class DetailSchemaTest extends TestCase
         $this->assertSame(ColumnType::DATETIME->value, $array['fields'][3]['type']);
     }
 
-    public function test_tabbed_detail_schema(): void
+    /**
+     * Escenario: se define una vista de detalle estructurada por pestañas (DetailTab).
+     * Expectativa: toArray produce tabs poblado con sus respectivos fields y fields en la raíz como null.
+     */
+    #[Test]
+    public function it_serializes_tabbed_detail_schema_for_structured_inspection(): void
     {
+        // given
         $schema = DetailSchema::make('user-detail')
             ->tabs([
                 DetailTab::make('general', 'General')->icon('tabler-user')->fields([
@@ -52,15 +69,38 @@ class DetailSchemaTest extends TestCase
                 ]),
             ]);
 
-        $this->assertTrue($schema->hasTabs());
-        $this->assertCount(3, $schema->getFields());
-
+        // when
+        $hasTabs = $schema->hasTabs();
+        $fields = $schema->getFields();
         $array = $schema->toArray();
+
+        // then
+        $this->assertTrue($hasTabs);
+        $this->assertCount(3, $fields);
+
         $this->assertNull($array['fields']);
         $this->assertIsArray($array['tabs']);
         $this->assertCount(2, $array['tabs']);
         $this->assertSame('general', $array['tabs'][0]['id']);
         $this->assertSame('tabler-user', $array['tabs'][0]['icon']);
         $this->assertCount(2, $array['tabs'][0]['fields']);
+    }
+
+    /**
+     * Escenario: se configuran campos de detalle con tipos boolean, link y json.
+     * Expectativa: los tipos se mapean con los valores exactos del Enum ColumnType.
+     */
+    #[Test]
+    public function it_formats_detail_fields_with_specialized_types(): void
+    {
+        // given
+        $boolField = DetailField::make('is_active')->boolean();
+        $linkField = DetailField::make('website')->link();
+        $jsonField = DetailField::make('metadata')->json();
+
+        // when / then
+        $this->assertSame(ColumnType::BOOLEAN, $boolField->getType());
+        $this->assertSame(ColumnType::LINK, $linkField->getType());
+        $this->assertSame(ColumnType::JSON, $jsonField->getType());
     }
 }

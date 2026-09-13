@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Warrior\SchemaBuilder\Tests\Unit;
 
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Warrior\SchemaBuilder\Concerns\HasIdAndTitle;
 use Warrior\SchemaBuilder\Concerns\HasOptions;
@@ -17,7 +19,7 @@ use Warrior\SchemaBuilder\Enums\FieldType;
 use Warrior\SchemaBuilder\Enums\PaginationPosition;
 use Warrior\SchemaBuilder\Enums\TabsPosition;
 
-enum TestDummyEnum: string
+enum TestDummyRoleEnum: string
 {
     case ADMIN = 'admin';
     case USER = 'user';
@@ -26,7 +28,7 @@ enum TestDummyEnum: string
     {
         return match ($this) {
             self::ADMIN => 'Administrador',
-            self::USER => 'Usuario Normal',
+            self::USER => 'Usuario Estándar',
         };
     }
 }
@@ -43,112 +45,218 @@ class DummyComponent
 
 class ConcernsAndEnumsTest extends TestCase
 {
-    public function test_enums_have_correct_values(): void
+    /**
+     * Escenario: se consultan los valores respaldados de los Enums de PHP 8.2 del paquete.
+     * Expectativa: cada caso coincide exactamente con las cadenas esperadas por el frontend.
+     */
+    #[Test]
+    public function it_verifies_all_enums_have_correct_backed_string_values(): void
     {
+        // given / when / then
         $this->assertSame('text', ColumnType::TEXT->value);
         $this->assertSame('avatar', ColumnType::AVATAR->value);
         $this->assertSame('badge', ColumnType::BADGE->value);
         $this->assertSame('currency', ColumnType::CURRENCY->value);
+        $this->assertSame('date', ColumnType::DATE->value);
+        $this->assertSame('datetime', ColumnType::DATETIME->value);
+        $this->assertSame('boolean', ColumnType::BOOLEAN->value);
+        $this->assertSame('link', ColumnType::LINK->value);
+        $this->assertSame('json', ColumnType::JSON->value);
 
         $this->assertSame('text', FieldType::TEXT->value);
+        $this->assertSame('email', FieldType::EMAIL->value);
+        $this->assertSame('password', FieldType::PASSWORD->value);
+        $this->assertSame('number', FieldType::NUMBER->value);
+        $this->assertSame('textarea', FieldType::TEXTAREA->value);
         $this->assertSame('select', FieldType::SELECT->value);
+        $this->assertSame('radio', FieldType::RADIO->value);
+        $this->assertSame('checkbox', FieldType::CHECKBOX->value);
+        $this->assertSame('switch', FieldType::SWITCH->value);
         $this->assertSame('file', FieldType::FILE->value);
+        $this->assertSame('image', FieldType::IMAGE->value);
+        $this->assertSame('hidden', FieldType::HIDDEN->value);
 
         $this->assertSame('start', Alignment::START->value);
         $this->assertSame('center', Alignment::CENTER->value);
         $this->assertSame('end', Alignment::END->value);
 
         $this->assertSame('both', PaginationPosition::BOTH->value);
+        $this->assertSame('top', PaginationPosition::TOP->value);
+        $this->assertSame('bottom', PaginationPosition::BOTTOM->value);
+        $this->assertSame('none', PaginationPosition::NONE->value);
+
         $this->assertSame('toolbar', TabsPosition::TOOLBAR->value);
+        $this->assertSame('top', TabsPosition::TOP->value);
     }
 
-    public function test_makeable_and_has_id_and_title(): void
+    /**
+     * Escenario: se instancia un componente utilizando Makeable y se configuran identificadores y títulos.
+     * Expectativa: los getters retornan los valores asignados y label toma title como respaldo.
+     */
+    #[Test]
+    public function it_configures_identifiers_titles_and_labels_fluently(): void
     {
-        $dummy = DummyComponent::make()
-            ->id('user-id')
+        // given
+        $component = DummyComponent::make();
+
+        // when
+        $component
+            ->id('user-component')
             ->title('User Title')
             ->subtitle('User Subtitle')
             ->description('User Description');
 
-        $this->assertSame('user-id', $dummy->getId());
-        $this->assertSame('User Title', $dummy->getTitle());
-        $this->assertSame('User Title', $dummy->getLabel());
-        $this->assertSame('User Subtitle', $dummy->getSubtitle());
-        $this->assertSame('User Description', $dummy->getDescription());
+        // then
+        $this->assertSame('user-component', $component->getId());
+        $this->assertSame('User Title', $component->getTitle());
+        $this->assertSame('User Title', $component->getLabel());
+        $this->assertSame('User Subtitle', $component->getSubtitle());
+        $this->assertSame('User Description', $component->getDescription());
     }
 
-    public function test_has_visibility_conditionals(): void
+    /**
+     * Escenario: se evalúa la visibilidad condicional con when y unless en backend, y visibleWhen para frontend.
+     * Expectativa: los callbacks se ejecutan según la condición y se serializa la regla reactiva visibleWhen.
+     */
+    #[Test]
+    public function it_controls_visibility_conditions_both_on_backend_and_frontend(): void
     {
-        $dummy = DummyComponent::make();
-        $this->assertTrue($dummy->isVisible());
+        // given
+        $component = DummyComponent::make();
 
-        $dummy->hidden();
-        $this->assertFalse($dummy->isVisible());
+        // when / then - visibilidad backend
+        $this->assertTrue($component->isVisible());
+        $component->hidden();
+        $this->assertFalse($component->isVisible());
+        $component->visible();
+        $this->assertTrue($component->isVisible());
 
-        $dummy->visible();
-        $this->assertTrue($dummy->isVisible());
-
-        $dummy->when(true, function (DummyComponent $c) {
-            $c->title('Modified by when');
+        // when - callbacks when / unless
+        $component->when(true, function (DummyComponent $c) {
+            $c->title('Visible via when');
         });
-        $this->assertSame('Modified by when', $dummy->getTitle());
+        $component->unless(true, function (DummyComponent $c) {
+            $c->title('This should NOT be executed');
+        });
 
-        $dummy->visibleWhen('role', 'admin');
+        // then
+        $this->assertSame('Visible via when', $component->getTitle());
+
+        // when - visibilidad reactiva frontend
+        $component->visibleWhen('status', 'active', '!==');
+
+        // then
         $this->assertSame([
-            'field' => 'role',
-            'is' => 'admin',
-            'operator' => '===',
-        ], $dummy->getVisibleWhen());
+            'field' => 'status',
+            'is' => 'active',
+            'operator' => '!==',
+        ], $component->getVisibleWhen());
     }
 
-    public function test_has_permissions(): void
+    /**
+     * Escenario: se asignan permisos de autorización RBAC a un componente.
+     * Expectativa: se almacenan los permisos y se puede consultar el primero o si posee permisos.
+     */
+    #[Test]
+    public function it_manages_rbac_permissions_correctly(): void
     {
-        $dummy = DummyComponent::make()->permission(['users.create', 'users.update']);
-        $this->assertTrue($dummy->hasPermissions());
-        $this->assertSame(['users.create', 'users.update'], $dummy->getPermissions());
-        $this->assertSame('users.create', $dummy->getFirstPermission());
+        // given
+        $component = DummyComponent::make();
 
-        $dummy2 = DummyComponent::make()->can('users.delete');
-        $this->assertSame(['users.delete'], $dummy2->getPermissions());
+        // when
+        $component->permission(['users.create', 'users.update']);
+
+        // then
+        $this->assertTrue($component->hasPermissions());
+        $this->assertSame(['users.create', 'users.update'], $component->getPermissions());
+        $this->assertSame('users.create', $component->getFirstPermission());
+
+        // when - alias can()
+        $single = DummyComponent::make()->can('users.delete');
+
+        // then
+        $this->assertTrue($single->hasPermissions());
+        $this->assertSame(['users.delete'], $single->getPermissions());
     }
 
-    public function test_has_options_array_and_enum(): void
+    /**
+     * Escenario: se configuran opciones clave-valor desde array o auto-extraídas desde un Enum de PHP 8.1+.
+     * Expectativa: se formatean como array normalizado [{value, label}].
+     */
+    #[Test]
+    public function it_normalizes_options_from_array_and_php_enums(): void
     {
-        $dummy = DummyComponent::make()->options([
-            'a' => 'Opción A',
-            'b' => 'Opción B',
+        // given
+        $fromArray = DummyComponent::make();
+        $fromEnum = DummyComponent::make();
+
+        // when
+        $fromArray->options([
+            'admin' => 'Administrador',
+            'editor' => 'Editor',
         ]);
+        $fromEnum->optionsFromEnum(TestDummyRoleEnum::class);
 
-        $this->assertSame([
-            ['value' => 'a', 'label' => 'Opción A'],
-            ['value' => 'b', 'label' => 'Opción B'],
-        ], $dummy->getOptions());
-
-        $dummyEnum = DummyComponent::make()->optionsFromEnum(TestDummyEnum::class);
+        // then
         $this->assertSame([
             ['value' => 'admin', 'label' => 'Administrador'],
-            ['value' => 'user', 'label' => 'Usuario Normal'],
-        ], $dummyEnum->getOptions());
+            ['value' => 'editor', 'label' => 'Editor'],
+        ], $fromArray->getOptions());
+
+        $this->assertSame([
+            ['value' => 'admin', 'label' => 'Administrador'],
+            ['value' => 'user', 'label' => 'Usuario Estándar'],
+        ], $fromEnum->getOptions());
     }
 
-    public function test_has_validation_rules_and_patch_adaptation(): void
+    /**
+     * Escenario: se intenta extraer opciones de una clase inexistente o que no es un Enum.
+     * Expectativa: lanza InvalidArgumentException con un mensaje descriptivo en español.
+     */
+    #[Test]
+    public function it_throws_exception_when_extracting_options_from_invalid_enum(): void
     {
-        $dummy = DummyComponent::make()
+        // given
+        $component = DummyComponent::make();
+
+        // then
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('La clase stdClass no es un Enum válido.');
+
+        // when
+        /** @phpstan-ignore argument.type */
+        $component->optionsFromEnum(\stdClass::class);
+    }
+
+    /**
+     * Escenario: se definen reglas de validación en modo creación (POST) y se extraen en modo actualización (PATCH).
+     * Expectativa: en modo PATCH, la regla 'required' se convierte automáticamente en 'sometimes|required' (dirty tracking).
+     */
+    #[Test]
+    public function it_adapts_validation_rules_for_patch_dirty_tracking(): void
+    {
+        // given
+        $component = DummyComponent::make()
             ->required()
             ->string()
-            ->min(3)
+            ->min(5)
             ->max(100)
-            ->unique('users', 'email');
+            ->unique('users', 'email', except: '10', idColumn: 'uuid');
 
-        $creationRules = $dummy->getValidationRules(isUpdate: false);
-        $this->assertContains('required', $creationRules);
-        $this->assertContains('string', $creationRules);
-        $this->assertContains('min:3', $creationRules);
-        $this->assertContains('max:100', $creationRules);
-        $this->assertContains('unique:users,email', $creationRules);
+        // when - creación (POST)
+        $createRules = $component->getValidationRules(isUpdate: false);
 
-        // Update mode (PATCH) -> required should become sometimes, required
-        $updateRules = $dummy->getValidationRules(isUpdate: true);
-        $this->assertSame(['sometimes', 'required', 'string', 'min:3', 'max:100', 'unique:users,email'], $updateRules);
+        // then
+        $this->assertContains('required', $createRules);
+        $this->assertContains('string', $createRules);
+        $this->assertContains('min:5', $createRules);
+        $this->assertContains('max:100', $createRules);
+        $this->assertContains('unique:users,email,10,uuid', $createRules);
+
+        // when - actualización parcial (PATCH)
+        $patchRules = $component->getValidationRules(isUpdate: true);
+
+        // then
+        $this->assertSame(['sometimes', 'required', 'string', 'min:5', 'max:100', 'unique:users,email,10,uuid'], $patchRules);
     }
 }
