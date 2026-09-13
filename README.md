@@ -7,13 +7,13 @@
 [![PHP Version](https://img.shields.io/packagist/dependency-v/warrior/schema-builder/php.svg?style=flat-square)](https://packagist.org/packages/warrior/schema-builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE.md)
 
-Un constructor de esquemas declarativo, fluido y desacoplado (**Headless Schema Builder**) para **Laravel 10, 11 y 12**, diseñado para alimentar interfaces CRUD dinámicas en el frontend (Vuexy, Vue 3, React, Svelte, Flutter) mediante contratos JSON estandarizados.
+Construye formularios interactivos, tablas dinámicas y validaciones seguras en 5 minutos sin duplicar código en **Laravel 10, 11 y 12**, listo para alimentar cualquier interfaz en el frontend (BootstrapVue, Vue 3, React, Svelte o Blade) mediante contratos JSON estandarizados.
 
 ---
 
 ## 🌟 Filosofía y Principios de Diseño
 
-- **Agnóstico al Frontend (Headless JSON):** Produce estructuras JSON limpias y predecibles consumibles por cualquier cliente HTTP (`<DynamicDataTable />`, `<DynamicForm />`, `<CrudComponent />`, apps móviles o SPAs).
+- **100% Agnóstico al Frontend:** Produce estructuras JSON estándar y predecibles consumibles por cualquier cliente HTTP o framework de UI (BootstrapVue, Vue 3, React, Svelte o Blade con Alpine.js).
 - **Developer Experience (DX First):** Autocompletado del 100% en tu IDE con métodos encadenables legibles y autoexplicativos (`TableSchema::make()`, `FormSchema::make()`, `Field::text()`).
 - **Principios SOLID & Patrones GoF:**
   - **Fluent Builder:** Construcción ergonómica paso a paso.
