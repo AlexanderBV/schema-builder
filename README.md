@@ -5,9 +5,13 @@
 [![PHPStan Status](https://img.shields.io/github/actions/workflow/status/AlexanderBV/schema-builder/phpstan.yml?branch=main&label=phpstan%20lvl%208&style=flat-square)](https://github.com/AlexanderBV/schema-builder/actions)
 [![Total Downloads](https://img.shields.io/packagist/dt/warrior/schema-builder.svg?style=flat-square)](https://packagist.org/packages/warrior/schema-builder)
 [![PHP Version](https://img.shields.io/packagist/dependency-v/warrior/schema-builder/php.svg?style=flat-square)](https://packagist.org/packages/warrior/schema-builder)
+[![Documentation](https://img.shields.io/badge/docs-online-brightgreen.svg?style=flat-square)](https://alexanderbv.github.io/schema-builder-docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE.md)
 
 Construye formularios interactivos, tablas dinámicas y validaciones seguras en 5 minutos sin duplicar código en **Laravel 10, 11 y 12**, listo para alimentar cualquier interfaz en el frontend (BootstrapVue, Vue 3, React, Svelte o Blade) mediante contratos JSON estandarizados.
+
+> 📚 **Documentación Oficial y Guías Completas:**  
+> **[https://alexanderbv.github.io/schema-builder-docs/](https://alexanderbv.github.io/schema-builder-docs/)**
 
 ---
 

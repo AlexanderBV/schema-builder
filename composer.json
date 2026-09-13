@@ -1,7 +1,16 @@
 {
     "name": "warrior/schema-builder",
-    "description": "Fluent, headless, and expressive schema builder for dynamic tables, forms, and CRUDs in Laravel.",
-    "keywords": ["laravel", "schema-builder", "crud", "table-schema", "form-schema", "clean-code", "solid", "fluent"],
+    "description": "Declarative and fluent schema builder for dynamic tables, forms, and CRUDs in Laravel.",
+    "keywords": [
+        "laravel",
+        "schema-builder",
+        "crud",
+        "table-schema",
+        "form-schema",
+        "clean-code",
+        "solid",
+        "fluent"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -12,7 +21,8 @@
     "homepage": "https://github.com/AlexanderBV/schema-builder",
     "support": {
         "issues": "https://github.com/AlexanderBV/schema-builder/issues",
-        "source": "https://github.com/AlexanderBV/schema-builder"
+        "source": "https://github.com/AlexanderBV/schema-builder",
+        "docs": "https://alexanderbv.github.io/schema-builder-docs/"
     },
     "require": {
         "php": "^8.2",
