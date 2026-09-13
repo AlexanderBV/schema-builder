@@ -374,19 +374,6 @@ composer format
 
 ---
 
-## 📖 Documentación de Arquitectura (SPEC)
-
-Este proyecto se desarrolló bajo la metodología **SPEC**. Consulta los documentos en `.documents/`:
-- [SPEC.md](.documents/SPEC.md): Índice maestro y principios de diseño.
-- [SPEC-002: Contrato Formal JSON Schema](.documents/specs/SPEC-002-contrato-json-schema.md).
-- [SPEC-003: Arquitectura de Clases y Patrones GoF](.documents/specs/SPEC-003-arquitectura-clases-patrones.md).
-- [SPEC-004: Introspección y Extracción Pura de Reglas](.documents/specs/SPEC-004-sinergia-api-query-builder.md).
-- [SPEC-008: Motor de Formularios Fluido](.documents/specs/SPEC-008-motor-formularios-fluent.md).
-- [SPEC-009: Motor de Detalle de Sólo Lectura](.documents/specs/SPEC-009-motor-detalle-solo-lectura.md).
-- [SPEC-010: Patrón Bridge en Nivel de Aplicación](.documents/specs/SPEC-010-bridge-api-query-builder.md).
-
----
-
 ## 📄 Licencia
 
 Este paquete es software de código abierto licenciado bajo la [Licencia MIT](LICENSE.md).
