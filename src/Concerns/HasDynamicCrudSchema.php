@@ -14,7 +14,7 @@ use Warrior\SchemaBuilder\Table\TableSchema;
  * Trait HasDynamicCrudSchema
  *
  * Facilita la integración nativa de controladores API de Laravel con componentes frontend
- * como <CrudComponent />, <DynamicDataTable /> y <DynamicForm /> de Vuexy / React.
+ * como <CrudComponent />, <DynamicDataTable /> y <DynamicForm /> (Vue, React, BootstrapVue, etc.).
  */
 trait HasDynamicCrudSchema
 {
@@ -38,7 +38,7 @@ trait HasDynamicCrudSchema
     }
 
     /**
-     * Retorna la metadata unificada de esquemas requerida por <CrudComponent />.
+     * Retorna la metadata unificada de esquemas requerida por componentes CRUD del frontend.
      *
      * Endpoint: GET /api/v1/{resource}/schema
      *
@@ -58,19 +58,29 @@ trait HasDynamicCrudSchema
     /**
      * Valida la petición HTTP entrante contra las reglas compiladas del FormSchema.
      *
+     * Permite inyectar reglas adicionales o sobreescrituras, mensajes y atributos personalizados.
      * En operaciones de actualización ($isUpdate = true), activa automáticamente
      * dirty tracking (convirtiendo reglas 'required' a 'sometimes|required').
      *
      * @param  Request  $request  Petición HTTP actual.
      * @param  FormSchema|null  $schema  Esquema a usar (por defecto $this->formSchema()).
-     * @param  bool  $isUpdate  Si es true, activa modo PATCH con validación parcial.
+     * @param  bool  $isUpdate  Si es true, activa modo PATCH con validación parcial (dirty tracking).
+     * @param  array<string, mixed>  $additionalRules  Reglas de validación complementarias o sobreescritura.
+     * @param  array<string, string>  $messages  Mensajes de error personalizados para el validador.
+     * @param  array<string, string>  $customAttributes  Nombres de atributos personalizados para mensajes de error.
      * @return array<string, mixed> Datos validados listos para persistir.
      */
-    protected function validateWithSchema(Request $request, ?FormSchema $schema = null, bool $isUpdate = false): array
-    {
+    protected function validateWithSchema(
+        Request $request,
+        ?FormSchema $schema = null,
+        bool $isUpdate = false,
+        array $additionalRules = [],
+        array $messages = [],
+        array $customAttributes = []
+    ): array {
         $schema = $schema ?? $this->formSchema();
-        $rules = $schema->toValidationRules($isUpdate);
+        $rules = array_merge($schema->toValidationRules($isUpdate), $additionalRules);
 
-        return $request->validate($rules);
+        return $request->validate($rules, $messages, $customAttributes);
     }
 }

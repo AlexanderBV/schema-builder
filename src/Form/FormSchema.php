@@ -74,6 +74,13 @@ class FormSchema implements FieldContainerContract, SchemaContract
     protected array $sections = [];
 
     /**
+     * Reglas de validación personalizadas o adicionales registradas directamente en el esquema.
+     *
+     * @var array<string, array<int, mixed>>
+     */
+    protected array $customValidationRules = [];
+
+    /**
      * Constructor del esquema de formulario.
      *
      * @param  string|null  $id  Identificador único del formulario.
@@ -253,6 +260,44 @@ class FormSchema implements FieldContainerContract, SchemaContract
      * @param  bool  $isUpdate  Si es true, activa modo PATCH con adaptación dirty tracking.
      * @return array<string, array<int, mixed>>
      */
+    /**
+     * Agrega o sobreescribe una regla de validación para un campo específico.
+     *
+     * @param  string  $field  Nombre del campo en el formulario.
+     * @param  array<int, mixed>|string  $rules  Reglas de validación (array o string delimitado por pipes '|').
+     */
+    public function addValidationRule(string $field, array|string $rules): static
+    {
+        $newRules = is_string($rules) ? explode('|', $rules) : $rules;
+        $this->customValidationRules[$field] = array_merge(
+            $this->customValidationRules[$field] ?? [],
+            $newRules
+        );
+
+        return $this;
+    }
+
+    /**
+     * Fusiona múltiples reglas de validación personalizadas al esquema.
+     *
+     * @param  array<string, array<int, mixed>|string>  $rules
+     */
+    public function mergeValidationRules(array $rules): static
+    {
+        foreach ($rules as $field => $fieldRules) {
+            $this->addValidationRule($field, $fieldRules);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Compila recursivamente todas las reglas de validación de los campos contenidos
+     * combinándolas con las reglas personalizadas inyectadas.
+     *
+     * @param  bool  $isUpdate  Si es true, activa modo PATCH con adaptación dirty tracking.
+     * @return array<string, array<int, mixed>>
+     */
     public function toValidationRules(bool $isUpdate = false): array
     {
         $rules = [];
@@ -263,6 +308,11 @@ class FormSchema implements FieldContainerContract, SchemaContract
             if (! empty($fieldRules)) {
                 $rules[$field->getName()] = $fieldRules;
             }
+        }
+
+        // Fusiona las reglas personalizadas inyectadas
+        foreach ($this->customValidationRules as $customField => $customRules) {
+            $rules[$customField] = array_merge($rules[$customField] ?? [], $customRules);
         }
 
         return $rules;

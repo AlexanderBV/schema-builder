@@ -246,4 +246,61 @@ class FormSchemaTest extends TestCase
         $this->assertSame(FieldType::DATE_RANGE->value, $dateRangeArray['type']);
         $this->assertTrue($dateRangeArray['range']);
     }
+
+    /**
+     * Escenario: se configura un campo select dinámico con endpoint remoto y dependencias en cascada.
+     * Expectativa: optionsSource se serializa con la URL, dependencias y parámetros esperados.
+     */
+    #[Test]
+    public function it_handles_dynamic_select_with_endpoint_and_cascading_dependencies(): void
+    {
+        // given
+        $departmentSelect = Field::dynamicSelect('department_id', 'Departamento', '/api/v1/departments');
+        $citySelect = Field::select('city_id', 'Ciudad')
+            ->fromEndpoint('/api/v1/cities')
+            ->dependsOn('department_id', 'dept_id')
+            ->queryParams(['status' => 'active']);
+
+        // when
+        $deptArray = $departmentSelect->toArray();
+        $cityArray = $citySelect->toArray();
+
+        // then
+        $this->assertNotNull($deptArray['optionsSource']);
+        $this->assertSame('/api/v1/departments', $deptArray['optionsSource']['endpoint']);
+        $this->assertSame('api', $deptArray['optionsSource']['type']);
+
+        $this->assertNotNull($cityArray['optionsSource']);
+        $this->assertSame('/api/v1/cities', $cityArray['optionsSource']['endpoint']);
+        $this->assertSame('department_id', $cityArray['optionsSource']['dependOnField']);
+        $this->assertSame('dept_id', $cityArray['optionsSource']['paramKey']);
+        $this->assertSame(['status' => 'active'], $cityArray['optionsSource']['queryParams']);
+    }
+
+    /**
+     * Escenario: se inyectan reglas de validación custom o adicionales directamente al FormSchema.
+     * Expectativa: toValidationRules combina las reglas de los campos con las reglas custom inyectadas.
+     */
+    #[Test]
+    public function it_allows_custom_validation_rules_and_overrides(): void
+    {
+        // given
+        $schema = FormSchema::make()
+            ->fields([
+                Field::text('email')->required()->asEmail(),
+            ])
+            ->addValidationRule('email', ['max:100'])
+            ->addValidationRule('avatar', ['required', 'image']);
+
+        // when
+        $rules = $schema->toValidationRules();
+
+        // then
+        $this->assertArrayHasKey('email', $rules);
+        $this->assertArrayHasKey('avatar', $rules);
+        $this->assertContains('required', $rules['email']);
+        $this->assertContains('email', $rules['email']);
+        $this->assertContains('max:100', $rules['email']);
+        $this->assertSame(['required', 'image'], $rules['avatar']);
+    }
 }

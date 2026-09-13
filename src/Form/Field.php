@@ -226,6 +226,16 @@ class Field implements FieldContract
         return new SelectField($name, $label);
     }
 
+    public static function dynamicSelect(string $name, ?string $label = null, ?string $endpoint = null): SelectField
+    {
+        $field = new SelectField($name, $label);
+        if ($endpoint !== null) {
+            $field->endpoint($endpoint);
+        }
+
+        return $field;
+    }
+
     public static function radio(string $name, ?string $label = null): RadioField
     {
         return new RadioField($name, $label);
