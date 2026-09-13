@@ -1,0 +1,66 @@
+{
+    "name": "warrior/schema-builder",
+    "description": "Fluent, headless, and expressive schema builder for dynamic tables, forms, and CRUDs in Laravel.",
+    "keywords": ["laravel", "schema-builder", "crud", "table-schema", "form-schema", "clean-code", "solid", "fluent"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Warrior",
+            "email": "dev@warrior.test"
+        }
+    ],
+    "homepage": "https://github.com/AlexanderBV/schema-builder",
+    "support": {
+        "issues": "https://github.com/AlexanderBV/schema-builder/issues",
+        "source": "https://github.com/AlexanderBV/schema-builder"
+    },
+    "require": {
+        "php": "^8.2",
+        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/validation": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^2.9|^3.0",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "suggest": {
+        "warrior/api-query-builder": "Provides seamless Eloquent query building when paired with TableSchema."
+    },
+    "autoload": {
+        "psr-4": {
+            "Warrior\\SchemaBuilder\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Warrior\\SchemaBuilder\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Warrior\\SchemaBuilder\\SchemaBuilderServiceProvider"
+            ],
+            "aliases": {
+                "SchemaBuilder": "Warrior\\SchemaBuilder\\Facades\\SchemaBuilder"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "phpstan": "vendor/bin/phpstan analyse --configuration=phpstan.neon.dist",
+        "lint": "vendor/bin/pint --test",
+        "format": "vendor/bin/pint"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

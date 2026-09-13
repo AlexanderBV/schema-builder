@@ -1,0 +1,19 @@
+/vendor/
+composer.lock
+.phpunit.cache/
+.phpunit.result.cache
+.env
+.env.backup
+.env.production
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.log
+coverage/
+coverage.xml
+
+# Documentación interna (se ignora para distribución si aplica)
+/.documents/
