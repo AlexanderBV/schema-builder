@@ -9,7 +9,7 @@
 [![AI Skills](https://img.shields.io/badge/AI%20Skills-Cursor%20%7C%20Claude%20%7C%20Gemini-orange.svg?style=flat-square)](https://github.com/AlexanderBV/schema-builder-skills)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE.md)
 
-Construye formularios interactivos, tablas dinámicas y validaciones seguras en 5 minutos sin duplicar código en **Laravel 10, 11 y 12**, listo para alimentar cualquier interfaz en el frontend (BootstrapVue, Vue 3, React, Svelte o Blade) mediante contratos JSON estandarizados.
+Construye formularios interactivos, tablas dinámicas y validaciones seguras en 5 minutos sin duplicar código en **Laravel 10, 11, 12 y 13**, listo para alimentar cualquier interfaz en el frontend (BootstrapVue, Vue 3, React, Svelte o Blade) mediante contratos JSON estandarizados.
 
 > 📚 **Documentación Oficial y Guías Completas:**  
 > **[https://alexanderbv.github.io/schema-builder-docs/](https://alexanderbv.github.io/schema-builder-docs/)**  
